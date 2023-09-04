@@ -1,0 +1,64 @@
+# GitHub repository
+!git clone https://github.com/snap-stanford/multiscale-interactome.git
+
+# Add repository path to the system path
+repo_path = os.path.join(os.getcwd(), "multiscale-interactome")
+sys.path.append(repo_path)
+
+# Import the necessary classes
+from msi.node_to_node import NodeToNode
+from msi.drug_to_protein import DrugToProtein
+from msi.indication_to_protein import IndicationToProtein
+from msi.protein_to_protein import ProteinToProtein
+from msi.protein_to_biological_function import ProteinToBiologicalFunction
+from msi.biological_function_to_biological_function import BiologicalFunctionToBiologicalFunction
+
+# Import libraries
+from msi.msi import MSI
+import multiprocessing
+import numpy as np
+import pickle
+import networkx as nx
+import pandas as pd
+import matplotlib.pyplot as plt
+import sys
+import os
+
+tsv_files = []
+
+# Create an empty NetworkX graph
+graph = nx.Graph()
+
+# Iterate over the TSV files:
+# drug-to-protein.tsv
+# indication-to-protein.tsv
+# protein-to-protein.tsv
+# protein-to-biological-function.tsv
+# biological-function-to-biological-function.tsv
+
+for file_path in tsv_files:
+    # Read the TSV file into a pandas DataFrame
+    df = pd.read_csv(file_path, delimiter='\t')
+
+    # Extract the relation type from the file path
+    relation = os.path.basename(file_path).replace('.tsv', '')
+
+    # Iterate over the rows of the DataFrame
+    for _, row in df.iterrows():
+        from_node = row['node_1']
+        to_node = row['node_2']
+        node_type_1 = row['node_1_type']
+        node_type_2 = row['node_2_type']
+        node_name_1 = row['node_1_name']
+        node_name_2 = row['node_2_name']
+
+        # Add nodes and edges to the graph
+        graph.add_edge(from_node, to_node, rel_type=relation)
+        graph.nodes[from_node]['node_type'] = node_type_1
+        graph.nodes[to_node]['node_type'] = node_type_2
+        graph.nodes[from_node]['node_name'] = node_name_1
+        graph.nodes[to_node]['node_name'] = node_name_2
+
+# Print some information about the graph
+print("Number of nodes:", graph.number_of_nodes())
+print("Number of edges:", graph.number_of_edges())
